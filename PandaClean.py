@@ -36,7 +36,7 @@ df2 = df.groupby(["track_name"]).agg({"artists":lambda x: x.iloc[0],
                                       "acousticness":lambda x: x.iloc[0],
                                       "instrumentalness":lambda x: x.iloc[0],
                                       "liveness":lambda x: x.iloc[0],
-                                      "track_genre": lambda x: x.iloc[0]})
+                                      "track_genre": list})
 
 # Use the `apply` method to apply a function to each element of the `artists` column
 # The function maps the values of the `artists` column to integers using a dictionary

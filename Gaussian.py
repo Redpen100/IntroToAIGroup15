@@ -23,22 +23,25 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
+from sklearn.metrics import f1_score
 
 from sklearn.preprocessing import MultiLabelBinarizer
 
 
 df = pd.read_csv(r'C:\Users\wakob\Downloads\UniDownloads\year3\dataset1.csv',index_col=0)
 df.drop(['track_id', 'album_name'], axis = 1, inplace = True)
+df = df.drop(df[df.track_genre == "j-pop"].index)
 
+# Use the `str.split` method to split the `artists` column into a list of artists
 df["artists"] = df["artists"].str.split(';')
 
+# Convert the `explicit` column to a boolean dtype
 df['explicit'] = df['explicit'].astype(bool)
 
-track_genre_dict = {genre: i for i, genre in enumerate(df['track_genre'].unique())}
-df['track_genre'] = df['track_genre'].apply(lambda x: track_genre_dict[x])
 
 
-df2 = df.groupby(["track_name"]).agg({"artists":lambda x: x.iloc[0],
+# Use the `groupby` method to group the data by `track_name`
+df = df.groupby(["track_name"]).agg({"artists":lambda x: x.iloc[0],
                                       "popularity":lambda x: x.iloc[0],
                                       "duration_ms":lambda x: x.iloc[0],
                                       "explicit":lambda x: x.iloc[0],
@@ -53,39 +56,45 @@ df2 = df.groupby(["track_name"]).agg({"artists":lambda x: x.iloc[0],
                                       "liveness":lambda x: x.iloc[0],
                                       "track_genre": list})
 
-#all_artists = df2["artists"].apply(pd.Series).stack().unique()
-#artist_dict = {artist: i for i, artist in enumerate(all_artists)}
-#df2['artists'] = df2['artists'].apply(lambda x: [artist_dict[a] for a in x])
 
-#df2 = df2.dropna()
-
+df = df[~df['track_genre'].apply(lambda x: 'j-pop' in x or 'anime' in x or 'black-metal' in x or 'bluegrass' in x or 'brazil' in x or 'cantopop' in x
+                                  or 'french' in x or 'german' in x or 'indian' in x or 'iranian' in x or 'j-dance' in x or 'j-idol' in x
+                                  or 'j-rock' in x or'k-pop' in x or 'malay' in x or 'mandopop' in x or 'swedish' in x or 'turkish' in x or 'world-music' in x)]
 
 
-df2 = df2.sample(20000)
-all_artists = df2["artists"].apply(pd.Series).stack().unique()
+# Use the `apply` method to apply a function to each element of the `track_genre` column
+# The function maps the values of the `track_genre` column to integers using a dictionary
+df = df.sample(5000)
+all_genres = df["track_genre"].apply(pd.Series).stack().unique()
+track_genre_dict = {genre: i for i, genre in enumerate(all_genres)}
+df['track_genre'] = df['track_genre'].apply(lambda x: [track_genre_dict[a] for a in x])
+
+
+all_artists = df["artists"].apply(pd.Series).stack().unique()
 artist_dict = {artist: i for i, artist in enumerate(all_artists)}
-df2['artists'] = df2['artists'].apply(lambda x: [artist_dict[a] for a in x])
+df['artists'] = df['artists'].apply(lambda x: [artist_dict[a] for a in x])
 
-df2 = df2.dropna()
+df = df.dropna()
+
+
 
 
 
 mlb = MultiLabelBinarizer()
-df3 = df2
-artists_bin = mlb.fit_transform(df3['artists'])
+artists_bin = mlb.fit_transform(df['artists'])
+track_genre_bin = mlb.fit_transform(df['track_genre'])
 
-
-
-track_genre_bin = mlb.fit_transform(df3['track_genre'])
-
+# Create our X and y data    
 result = []
-for x in df3.columns:
+for x in df.columns:
     if (x != 'track_genre' and x!='artists'):
         result.append(x)
 
-X = df3[result].values
+X = df[result].values
+#track_genre_bin.to_csv('TestDataExport.csv')
 y = track_genre_bin
 
+# Concatenate the transformed `artists` and `track_genre` columns to the input data
 
 X = np.concatenate((X, artists_bin), axis=1)
 
@@ -104,9 +113,18 @@ y_pred = gnb.predict(X_test)
 
 accuracy = accuracy_score(y_pred, y_test)
 pmi = precision_score(y_test, y_pred, average='micro')
+pma = precision_score(y_test, y_pred, average='macro')
+pw = precision_score(y_test, y_pred, average='weighted')
 ps = precision_score(y_test, y_pred, average='samples')
+f=f1_score(y_test, y_pred, average='micro')
 
-print ("Gaussian")
+
+
+
+print("RF")
 print('The accuracy is: ',accuracy*100,'%')
 print('The micro is: ',pmi*100,'%')
+print('The macro is: ',pma*100,'%')
+print('The weighted is: ',pw*100,'%')
 print('The samples is: ',ps*100,'%')
+print("f1 =  ", f*100 , "%")

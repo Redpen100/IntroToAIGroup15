@@ -50,7 +50,7 @@ df2 = df.groupby(["track_name"]).agg({"artists":lambda x: x.iloc[0],
                                       "liveness":lambda x: x.iloc[0],
                                       "track_genre": list})
 
-df2 = df2.sample(30000)
+df2 = df2.sample(10000)
 all_artists = df2["artists"].apply(pd.Series).stack().unique()
 artist_dict = {artist: i for i, artist in enumerate(all_artists)}
 df2['artists'] = df2['artists'].apply(lambda x: [artist_dict[a] for a in x])
@@ -143,12 +143,9 @@ multi_clf.fit(X, y)
 predictions = multi_clf.predict(X_test)
 
 # Evaluate the model's performance
-accuracy = accuracy_score(y_test, predictions)
+accuracy = accuracy_score(predictions ,y_test)
 precision = precision_score(y_test, predictions, average='micro')
 print("Accuracy:", accuracy)
 print("Precision:", precision)
 f=f1_score(y_test, y_pred, average='micro')
 print("F1 Score:",f)
-conf_matrix = confusion_matrix(y_test, y_pred)
-print("Confusion matrix:")
-print(conf_matrix)

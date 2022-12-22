@@ -52,7 +52,7 @@ df = df[~df['track_genre'].apply(lambda x: 'j-pop' in x or 'anime' in x or 'blac
                                   or 'french' in x or 'german' in x or 'indian' in x or 'iranian' in x or 'j-dance' in x or 'j-idol' in x
                                   or 'j-rock' in x or'k-pop' in x or 'malay' in x or 'mandopop' in x or 'swedish' in x or 'turkish' in x or 'world-music' in x)]
 
-
+df = df.sample(200)
 #Retrieves all the unique genres present in the dataframe
 all_genres = df["track_genre"].apply(pd.Series).stack().unique()
 #Enumerates all the genres and stores them to a dictionary
@@ -71,7 +71,6 @@ df['artists'] = df['artists'].apply(lambda x: [artist_dict[a] for a in x])
 df['artists'] = df['artists'].apply(set)
 df['artists'] = df['artists'].apply(list)
 
-print("Data Read")
 #Drops all blank rows due to grouping
 df = df.dropna()
 #Initializes the multi-label binerizer, used for the multi-label classification
@@ -207,34 +206,6 @@ print('The Micro Precision is: ',mprecision*100,'%')
 print('The Macro Precision is: ',macprecision*100,'%')
 print('The Weight Precision is: ',wprecision*100,'%')
 print('The Sample Precision is: ',sprecision*100,'%')
-print("f1 =  ", f*100 , "%")
-
-##Perceptron
-
-gnb = MultiOutputClassifier(Perceptron(random_state=42))
-#Splits the data into training and testing data
-#Sets the test size to 10%
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=42)
-# Fit the model to the training data
-gnb.fit(X_train, y_train)
-# Make predictions on the testing data
-y_pred = gnb.predict(X_test)
-
-# Calculate accuracy metric
-accuracy = accuracy_score(y_pred, y_test)
-pmi = precision_score(y_test, y_pred, average='micro', zero_division = 0)
-pma = precision_score(y_test, y_pred, average='macro', zero_division = 0)
-pw = precision_score(y_test, y_pred, average='weighted', zero_division = 0)
-ps = precision_score(y_test, y_pred, average='samples', zero_division = 0)
-f=f1_score(y_test, y_pred, average='micro')
-
-#Print all metrics
-print("Perceptron Results:")
-print('The accuracy is: ',accuracy*100,'%')
-print('The micro is: ',pmi*100,'%')
-print('The macro is: ',pma*100,'%')
-print('The weighted is: ',pw*100,'%')
-print('The samples is: ',ps*100,'%')
 print("f1 =  ", f*100 , "%")
 
 ##SVM

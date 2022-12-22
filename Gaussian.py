@@ -20,6 +20,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import Perceptron
 
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
@@ -30,7 +31,6 @@ from sklearn.preprocessing import MultiLabelBinarizer
 
 df = pd.read_csv(r'C:\Users\wakob\Downloads\UniDownloads\year3\dataset1.csv',index_col=0)
 df.drop(['track_id', 'album_name'], axis = 1, inplace = True)
-df = df.drop(df[df.track_genre == "j-pop"].index)
 
 # Use the `str.split` method to split the `artists` column into a list of artists
 df["artists"] = df["artists"].str.split(';')
@@ -64,7 +64,8 @@ df = df[~df['track_genre'].apply(lambda x: 'j-pop' in x or 'anime' in x or 'blac
 
 # Use the `apply` method to apply a function to each element of the `track_genre` column
 # The function maps the values of the `track_genre` column to integers using a dictionary
-df = df.sample(5000)
+num = 500
+df = df.sample(num)
 all_genres = df["track_genre"].apply(pd.Series).stack().unique()
 track_genre_dict = {genre: i for i, genre in enumerate(all_genres)}
 df['track_genre'] = df['track_genre'].apply(lambda x: [track_genre_dict[a] for a in x])
@@ -121,7 +122,7 @@ f=f1_score(y_test, y_pred, average='micro')
 
 
 
-print("RF")
+print("Gaussian:              " , num)
 print('The accuracy is: ',accuracy*100,'%')
 print('The micro is: ',pmi*100,'%')
 print('The macro is: ',pma*100,'%')
